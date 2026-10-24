@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solar System · Planet Adventure</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Arial', system-ui, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: radial-gradient(circle at 20% 30%, #0a0f1e, #03060b);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+        }
+
+        .game-container {
+            width: 1100px;
+            max-width: 100%;
+            background: rgba(10, 20, 30, 0.75);
+            backdrop-filter: blur(8px);
+            border: 1px solid #2a4a6a;
+            border-radius: 32px;
+            box-shadow: 0 30px 50px rgba(0, 0, 0, 0.7), 0 0 40px #1e3a5f33;
+            padding: 24px 28px 32px;
+            color: #e8eef5;
+        }
+
+        h1 {
+            font-size: 2.1rem;
+            font-weight: 400;
+            letter-spacing: 2px;
+            text-align: center;
+            margin-bottom: 4px;
+            color: #b8d4f0;
+            text-shadow: 0 0 12px #2e5a8a;
+        }
+
+        .subhead {
+            text-align: center;
+            font-size: 0.9rem;
+            color: #7a9bc2;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #1d3b54;
+            padding-bottom: 12px;
+            letter-spacing: 1px;
+        }
+
+        .main-panel {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .planet-selector {
+            flex: 1 1 280px;
+            background: #09131f;
+            border-radius: 24px;
+            padding: 16px 14px;
+            border: 1px solid #1d405c;
+            box-shadow: inset 0 0 20px #00000055;
+        }
+
+        .planet-selector h2 {
+            font-size: 1.1rem;
+            font-weight: 400;
+            color: #9ab9dd;
+            margin-bottom: 14px;
+            text-align: center;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .planet-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+
+        .planet-btn {
+            background: #0f1e2b;
+            border: 1px solid #27516f;
+            border-radius: 18px;
+            padding: 12px 6px;
+            color: #cee1f5;
+            font-size: 1rem;
+            font-weight: 500;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 4px 8px #00000033;
+            letter-spacing: 0.5px;
+        }
+
+        .planet-btn span.emoji {
+            font-size: 1.8rem;
+            margin-bottom: 4px;
+            filter: drop-shadow(0 0 6px #3e7fb0);
+        }
+
+        .planet-btn:hover {
+            background: #193549;
+            border-color: #4a8ab0;
+            transform: scale(1.02);
+        }
+
+        .planet-btn.active {
+            background: #1f4d6b;
+            border-color: #7fc1e6;
+            box-shadow: 0 0 18px #4a9fd8;
+        }
+
+        .planet-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            border-color: #2a3d4e;
+        }
+
+        .game-area {
+            flex: 2 1 500px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            background: #0b1724;
+            padding: 12px 20px;
+            border-radius: 40px;
+            border: 1px solid #1e405a;
+            font-size: 0.95rem;
+            color: #b0cce8;
+        }
+
+        .status-bar .score {
+            color: #f5e56b;
+            font-weight: 600;
+            text-shadow: 0 0 8px #b89e2a;
+        }
+
+        .dialogue-box {
+            background: #0a1520;
+            border-radius: 28px;
+            padding: 20px 24px;
+            border: 1px solid #1e3e56;
+            box-shadow: inset 0 0 30px #00000066;
+            min-height: 160px;
+            max-height: 220px;
+            overflow-y: auto;
+            font-size: 1rem;
+            line-height: 1.6;
+            color: #d2e5fa;
+            scrollbar-width: thin;
+            scrollbar-color: #2f6188 #0a1520;
+        }
+
+        .dialogue-box p {
+            margin-bottom: 10px;
+        }
+
+        .dialogue-box .narrator {
+            color: #aac4e0;
+            font-style: italic;
+            border-left: 3px solid #3d6f94;
+            padding-left: 14px;
+            margin: 10px 0;
+        }
+
+        .dialogue-box .speech {
+            color: #f2e9c2;
+            font-weight: 400;
+        }
+
+        .dialogue-box .highlight {
+            color: #9cd0ff;
+            font-weight: 500;
+        }
+
+        .action-area {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .action-btn {
+            background: #142b3b;
+            border: 1px solid #2c6080;
+            color: #d6ebff;
+            padding: 12px 24px;
+            border-radius: 40px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.15s;
+            flex: 1 1 140px;
+            text-align: center;
+            letter-spacing: 0.6px;
+            box-shadow: 0 4px 10px #00000044;
+        }
+
+        .action-btn:hover {
+            background: #1e4a63;
+            border-color: #5d9fc7;
+            transform: translateY(-2px);
+        }
+
+        .action-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+            border-color: #2d4053;
+            background: #0d1a24;
+        }
+
+        .restart-btn {
+            background: #2a2533;
+            border-color: #6f5a8a;
+            color: #e2d4ff;
+        }
+
+        .restart-btn:hover {
+            background: #413456;
+            border-color: #a68fd0;
+        }
+
+        .footer-note {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 0.75rem;
+            color: #3e5e7a;
+            letter-spacing: 1px;
+        }
+    </style>
+</head>
+<body>
+<div class="game-container">
+    <h1>🌌 SOLAR SYSTEM · PLANET ADVENTURE</h1>
+    <div class="subhead">A short interactive story across the planets</div>
+
+    <div class="main-panel">
+        <!-- planet selector -->
+        <div class="planet-selector">
+            <h2>⚡ DESTINATIONS</h2>
+            <div class="planet-grid" id="planetGrid">
+                <!-- generated with JS -->
+            </div>
+        </div>
+
+        <!-- main game area -->
+        <div class="game-area">
+            <div class="status-bar">
+                <div>🪐 <span id="currentPlanetDisplay">Mercury</span></div>
+                <div>📡 <span id="progressDisplay">0 / 9</span></div>
+                <div>⭐ <span class="score" id="scoreDisplay">0</span> data</div>
+            </div>
+
+            <div class="dialogue-box" id="dialogueBox">
+                <!-- story text appears here -->
+            </div>
+
+            <div class="action-area" id="actionArea">
+                <!-- dynamic action buttons -->
+            </div>
+        </div>
+    </div>
+
+    <div class="footer-note">⚡ CLICK A PLANET TO BEGIN YOUR JOURNEY ⚡</div>
+</div>
+
+<script>
+    // ---------- GAME DATA ----------
+    const planets = [
+        { 
+            id: 'mercury', name: 'Mercury', emoji: '🌑', order: 0,
+            description: 'Scorched and airless. The first stop of your expedition.',
+            firstVisit: `You land on Mercury. The silence is absolute. Ahead, a tiny probe beacon blinks in the glare. You collect a data crystal humming with ancient code.`,
+            secondVisit: `The crystal now rests in your ship. Mercury's surface feels different—less hostile, more like a library of stone. You take a moment to log the coordinates.`,
+            successMessage: `You pocket the data crystal. Its whispers hint at a larger pattern across the solar system.`,
+            actionLabel: '⚡ Collect data crystal',
+            reward: 12
+        },
+        { 
+            id: 'venus', name: 'Venus', emoji: '🌕', order: 1,
+            description: 'A greenhouse gone mad. Hidden secrets in the clouds.',
+            firstVisit: `Venus greets you with crushing pressure and a sulfuric haze. A floating research pod drifts nearby, its sensors still active. You dock and recover a memory shard containing star charts.`,
+            secondVisit: `The memory shard is safe in your cargo. The pod's AI whispers a warning about the outer planets. You listen carefully.`,
+            successMessage: `The memory shard unlocks a new understanding of the system.`,
+            actionLabel: '📀 Retrieve memory shard',
+            reward: 15
+        },
+        { 
+            id: 'earth', name: 'Earth', emoji: '🌍', order: 2,
+            description: 'Your home world. But something is different now.',
+            firstVisit: `You orbit Earth, but no radio signals answer. In the ruins of an old observatory, you find a handwritten logbook. The last entry says: "They are waiting on Mars." You take the logbook.`,
+            secondVisit: `The logbook feels heavier now. Earth's blue oceans look distant. You wonder if the message was meant for you.`,
+            successMessage: `The logbook reveals a hidden route to the asteroid belt.`,
+            actionLabel: '📖 Take logbook',
+            reward: 20
+        },
+        { 
+            id: 'mars', name: 'Mars', emoji: '🔴', order: 3,
+            description: 'Dust storms and a buried signal.',
+            firstVisit: `A signal pulses from beneath the red dust. You dig with your gloved hands and uncover a metallic artifact—a key with a Martian inscription: "For the one who listens."`,
+            secondVisit: `The key is warm even through your suit. You feel an odd sense of being watched. Mars rumbles softly.`,
+            successMessage: `The artifact key vibrates in your palm. It might open something big.`,
+            actionLabel: '🔑 Take artifact key',
+            reward: 18
+        },
+        { 
+            id: 'jupiter', name: 'Jupiter', emoji: '🪐', order: 4,
+            description: 'The giant. Storms hide more than gas.',
+            firstVisit: `Inside the Great Red Spot, a floating library drifts. You dock and download a compressed file labeled "JUPITER-ARCHIVE". It contains the system's oldest star map.`,
+            secondVisit: `The archive data is vast. You spend an hour watching the storms. Your ship's computer hums with new insights.`,
+            successMessage: `The star map is now part of your navigation system.`,
+            actionLabel: '🗺️ Download star map',
+            reward: 25
+        },
+        { 
+            id: 'saturn', name: 'Saturn', emoji: '🪐', order: 5,
+            description: 'Rings of ice and a silent relay.',
+            firstVisit: `The rings glitter with frozen ammonia. A derelict relay station tumbles slowly. You board it and find a holographic message from a lost expedition. It warns of the "Kuiper anomaly".`,
+            secondVisit: `The message replays. Saturn's rings cast long shadows. You copy the coordinates to your nav computer.`,
+            successMessage: `The warning is clear—and strangely personal.`,
+            actionLabel: '📡 Decode hologram',
+            reward: 22
+        },
+        { 
+            id: 'uranus', name: 'Uranus', emoji: '🧊', order: 6,
+            description: 'Ice world. A library of frozen thoughts.',
+            firstVisit: `On Uranus's icy moon, you find a crystalline structure. Inside, a frozen AI core holds thousands of stories from a vanished civilization. You carefully extract one: "The Song of the Void".`,
+            secondVisit: `The AI core flickers. You feel its gratitude. The Song of the Void plays in your mind—a melody of pure data.`,
+            successMessage: `The story fragment resonates with your own mission logs.`,
+            actionLabel: '💎 Extract story core',
+            reward: 28
+        },
+        { 
+            id: 'neptune', name: 'Neptune', emoji: '🌊', order: 7,
+            description: 'Windy and deep. The last outpost.',
+            firstVisit: `Neptune's winds howl. A small outpost orbits close to the planet. Inside, a lone beacon pulses. You take the data rod—it contains the final piece of a cipher.`,
+            secondVisit: `The rod glows softly. You now hold all nine fragments. The cipher begins to decrypt itself.`,
+            successMessage: `The final fragment clicks into place. Your journey is complete.`,
+            actionLabel: '🧩 Recover cipher rod',
+            reward: 30
+        },
+        { 
+            id: 'pluto', name: 'Pluto', emoji: '❄️', order: 8,
+            description: 'The outer edge. A quiet revelation.',
+            firstVisit: `Pluto is not a planet, but it holds a secret. In a deep crater, you find a small plaque with a message from the first solar explorers: "We left our hearts here. Take care of the system."`,
+            secondVisit: `The plaque shines under the distant sun. You feel a deep connection to all who came before.`,
+            successMessage: `The plaque's message fills you with purpose.`,
+            actionLabel: '📜 Read plaque',
+            reward: 35
+        }
+    ];
+
+    // Game state
+    let currentPlanetIndex = 0;        // will be set when user clicks
+    let visited = new Array(9).fill(false);
+    let collectedData = new Array(9).fill(0);
+    let totalScore = 0;
+    let progressCount = 0;             // how many planets have been successfully explored
+
+    // For UI
+    const planetGrid = document.getElementById('planetGrid');
+    const dialogueBox = document.getElementById('dialogueBox');
+    const actionArea = document.getElementById('actionArea');
+    const currentPlanetDisplay = document.getElementById('currentPlanetDisplay');
+    const progressDisplay = document.getElementById('progressDisplay');
+    const scoreDisplay = document.getElementById('scoreDisplay');
+
+    // ---------- HELPER FUNCTIONS ----------
+    function updateUI() {
+        // update status numbers
+        progressDisplay.textContent = `${progressCount} / 9`;
+        scoreDisplay.textContent = totalScore;
+
+        // update planet buttons (active + disabled)
+        document.querySelectorAll('.planet-btn').forEach((btn, idx) => {
+            const planetId = planets[idx].id;
+            const isVisited = visited[idx];
+            btn.classList.toggle('active', idx === currentPlanetIndex);
+            btn.disabled = isVisited;   // cannot revisit a completed planet
+        });
+
+        // update planet display name
+        if (currentPlanetIndex !== null && planets[currentPlanetIndex]) {
+            currentPlanetDisplay.textContent = planets[currentPlanetIndex].name;
+        }
+    }
+
+    // Render the planet selection grid (once)
+    function buildPlanetGrid() {
+        planets.forEach((planet, index) => {
+            const btn = document.createElement('button');
+            btn.className = 'planet-btn';
+            btn.innerHTML = `<span class="emoji">${planet.emoji}</span>${planet.name}`;
+            btn.dataset.index = index;
+
+            btn.addEventListener('click', () => {
+                if (visited[index]) {
+                    // Should not happen because button disabled, but safety
+                    return;
+                }
+                // set current planet
+                currentPlanetIndex = index;
+                updateUI();
+                renderPlanetStory(index);
+            });
+
+            planetGrid.appendChild(btn);
+        });
+    }
+
+    // Show story for a planet and appropriate action button
+    function renderPlanetStory(index) {
+        const planet = planets[index];
+        const isVisited = visited[index];
+
+        // Build dialogue content
+        let dialogueHTML = '';
+
+        if (!isVisited) {
+            // first visit – show longer intro
+            dialogueHTML = `
+                <p class="narrator">🛰️ <em>Approaching ${planet.name}...</em></p>
+                <p>${planet.firstVisit}</p>
+                <p class="speech">〝The silence is thick. You feel the weight of history.〞</p>
+                <p>Your sensors indicate an <span class="highlight">anomalous signal</span> nearby. You decide to investigate.</p>
+            `;
+        } else {
+            // already visited – display second visit text
+            dialogueHTML = `
+                <p class="narrator">🛰️ <em>Revisiting ${planet.name}...</em></p>
+                <p>${planet.secondVisit}</p>
+                <p>You have already secured the data from this world. The memory lingers.</p>
+            `;
+        }
+
+        dialogueBox.innerHTML = dialogueHTML;
+
+        // Clear action area
+        actionArea.innerHTML = '';
+
+        if (!isVisited) {
+            // create action button for collecting
+            const actionBtn = document.createElement('button');
+            actionBtn.className = 'action-btn';
+            actionBtn.textContent = planet.actionLabel;
+            actionBtn.addEventListener('click', () => handleCollect(index));
+            actionArea.appendChild(actionBtn);
+
+            // also a skip / move on button (but still need to collect? No, we can add a "move on" without collecting? 
+            // For story purposes, we allow moving on without collecting, but then progress not complete. Better to encourage.
+            // But we add a "leave" button so user can skip? The game should be completable only by collecting all.
+            // Actually we'll add a "skip" that doesn't mark visited, but lets you explore other planets.
+            // But to keep progress, we only mark visited if collected.
+            const skipBtn = document.createElement('button');
+            skipBtn.className = 'action-btn';
+            skipBtn.textContent = '⏭️ Leave without collecting';
+            skipBtn.style.opacity = '0.7';
+            skipBtn.addEventListener('click', () => {
+                // just clear dialogue and show a generic message
+                dialogueBox.innerHTML = `<p>You leave ${planet.name} empty-handed. The data still awaits.</p>`;
+                actionArea.innerHTML = ''; // no buttons, user can click another planet
+                // But we need a way to show that the planet is not collected -> buttons still enabled
+                // We'll just render a "back to selection" hint? Not needed.
+                // But we should maybe auto show a hint to select another planet.
+                dialogueBox.innerHTML += `<p class="narrator">Click another planet to continue your journey.</p>`;
+            });
+            actionArea.appendChild(skipBtn);
+
+        } else {
+            // Already visited: show a disabled or info button
+            const infoBtn = document.createElement('button');
+            infoBtn.className = 'action-btn';
+            infoBtn.textContent = '✅ Data already collected';
+            infoBtn.disabled = true;
+            actionArea.appendChild(infoBtn);
+
+            // Also add a "scan again" flavor (no effect)
+            const flavorBtn = document.createElement('button');
+            flavorBtn.className = 'action-btn';
+            flavorBtn.textContent = '🔍 Scan surroundings (no new data)';
+            flavorBtn.addEventListener('click', () => {
+                dialogueBox.innerHTML = `<p class="narrator">You scan the familiar landscape of ${planet.name}. Nothing new—but the memory is comforting.</p>`;
+            });
+            actionArea.appendChild(flavorBtn);
+        }
+
+        // Always add a "Restart Mission" button at the end
+        const restartBtn = document.createElement('button');
+        restartBtn.className = 'action-btn restart-btn';
+        restartBtn.textContent = '🔄 Restart mission';
+        restartBtn.addEventListener('click', resetGame);
+        actionArea.appendChild(restartBtn);
+    }
+
+    // Handle data collection for a planet
+    function handleCollect(index) {
+        const planet = planets[index];
+        if (visited[index]) return; // already collected
+
+        // Mark visited and update score
+        visited[index] = true;
+        collectedData[index] = planet.reward;
+        totalScore += planet.reward;
+        progressCount += 1;
+
+        // Update UI
+        updateUI();
+
+        // Show success message in dialogue
+        dialogueBox.innerHTML = `
+            <p class="narrator">✨ <em>Data acquired from ${planet.name}</em> ✨</p>
+            <p>${planet.successMessage}</p>
+            <p class="highlight">+${planet.reward} data units added to your archive.</p>
+            ${progressCount === 9 ? '<p style="color:#b8f0b8; margin-top:12px;">🏆 You have explored all nine worlds. The solar system holds no more secrets for you... for now.</p>' : ''}
+        `;
+
+        // Disable this planet's button (handled in updateUI)
+        // Rebuild action area to show collected state
+        actionArea.innerHTML = '';
+
+        // Show a "continue" message
+        const continueBtn = document.createElement('button');
+        continueBtn.className = 'action-btn';
+        continueBtn.textContent = '🪐 Explore another planet';
+        continueBtn.addEventListener('click', () => {
+            // Just clear dialogue to prompt selection
+            dialogueBox.innerHTML = `<p>Select your next destination from the planet list.</p>`;
+            actionArea.innerHTML = '';
+            // No active planet now? Set currentPlanetIndex to something? We'll keep but it's fine.
+            // Better: set currentPlanetIndex = null so no active highlight? But easier to keep.
+            // We'll set it to -1 to remove highlight.
+            currentPlanetIndex = -1;
+            updateUI();
+            currentPlanetDisplay.textContent = '—';
+        });
+        actionArea.appendChild(continueBtn);
+
+        // Also add restart
+        const restartBtn2 = document.createElement('button');
+        restartBtn2.className = 'action-btn restart-btn';
+        restartBtn2.textContent = '🔄 Restart mission';
+        restartBtn2.addEventListener('click', resetGame);
+        actionArea.appendChild(restartBtn2);
+
+        // If all planets collected, change dialogue
+        if (progressCount === 9) {
+            dialogueBox.innerHTML = `
+                <p class="narrator">🌟 <em>Mission complete</em> 🌟</p>
+                <p>You have gathered every data fragment. The cipher unlocks a hidden message: "The solar system is a garden. Tend it well."</p>
+                <p>Your journey ends, but the stars are now yours to protect.</p>
+                <p class="highlight">Final score: ${totalScore} data units.</p>
+            `;
+            actionArea.innerHTML = '';
+            const restartFinal = document.createElement('button');
+            restartFinal.className = 'action-btn restart-btn';
+            restartFinal.textContent = '🔄 Play again';
+            restartFinal.addEventListener('click', resetGame);
+            actionArea.appendChild(restartFinal);
+        }
+    }
+
+    // Reset the entire game
+    function resetGame() {
+        // Reset state
+        visited = new Array(9).fill(false);
+        collectedData = new Array(9).fill(0);
+        totalScore = 0;
+        progressCount = 0;
+        currentPlanetIndex = 0;
+
+        // Clear UI
+        updateUI();
+        currentPlanetDisplay.textContent = 'Mercury';
+        dialogueBox.innerHTML = `
+            <p class="narrator">🛸 <em>Mission reboot. Your ship hums to life.</em></p>
+            <p>Welcome, explorer. Nine planets await. Each holds a fragment of a forgotten cipher. Collect all data to unlock the final message.</p>
+            <p>Click on a planet to begin your journey.</p>
+        `;
+        actionArea.innerHTML = '';
+
+        // Rebuild the planet buttons to clear disabled state (we'll just re-enable all via updateUI, which sets disabled based on visited)
+        // But updateUI only sets disabled = visited, so all false -> enabled.
+        // However we also need to reset active class.
+        document.querySelectorAll('.planet-btn').forEach((btn, idx) => {
+            btn.disabled = false;
+            btn.classList.remove('active');
+        });
+
+        // set mercury as active (index 0)
+        if (document.querySelectorAll('.planet-btn').length > 0) {
+            document.querySelectorAll('.planet-btn')[0].classList.add('active');
+        }
+
+        // Re-add restart button in action area? Not needed, but maybe show a welcome button
+        const startBtn = document.createElement('button');
+        startBtn.className = 'action-btn';
+        startBtn.textContent = '🚀 Start mission on Mercury';
+        startBtn.addEventListener('click', () => {
+            currentPlanetIndex = 0;
+            updateUI();
+            renderPlanetStory(0);
+        });
+        actionArea.appendChild(startBtn);
+
+        const restartBtn = document.createElement('button');
+        restartBtn.className = 'action-btn restart-btn';
+        restartBtn.textContent = '🔄 Reset';
+        restartBtn.addEventListener('click', resetGame);
+        actionArea.appendChild(restartBtn);
+    }
+
+    // ---------- INITIALIZE GAME ----------
+    function initGame() {
+        buildPlanetGrid();
+        // Set initial state: no planet selected, but show welcome
+        currentPlanetIndex = 0;   // mercury highlighted
+        visited = new Array(9).fill(false);
+        totalScore = 0;
+        progressCount = 0;
+
+        updateUI();
+        currentPlanetDisplay.textContent = 'Mercury';
+
+        dialogueBox.innerHTML = `
+            <p class="narrator">🛸 <em>Mission log: Solar System Odyssey</em></p>
+            <p>You are the last explorer. A cryptic signal echoes from every planet. Your mission: gather nine data fragments to decode the final message.</p>
+            <p>Click on a planet from the list to travel there. Each world holds a unique artifact.</p>
+            <p class="highlight">Begin your journey.</p>
+        `;
+
+        actionArea.innerHTML = '';
+        const startBtn = document.createElement('button');
+        startBtn.className = 'action-btn';
+        startBtn.textContent = '🚀 Launch to Mercury';
+        startBtn.addEventListener('click', () => {
+            currentPlanetIndex = 0;
+            updateUI();
+            renderPlanetStory(0);
+        });
+        actionArea.appendChild(startBtn);
+
+        const resetBtn = document.createElement('button');
+        resetBtn.className = 'action-btn restart-btn';
+        resetBtn.textContent = '🔄 Reset';
+        resetBtn.addEventListener('click', resetGame);
+        actionArea.appendChild(resetBtn);
+    }
+
+    // Start everything
+    initGame();
+</script>
+</body>
+</html>
